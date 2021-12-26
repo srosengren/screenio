@@ -11,11 +11,18 @@
 </head>
 
 <body>
-  <select>
+  <select class="display-selector-js">
+    <option value="49-5120:1440">49" 5120x1440px</option>
+    <option value="32-3840:2160" selected>32" 3840x2160px</option>
+    <option value="32-2560:1440">32" 2560x1440px</option>
+    <option value="24-2560:1440">24" 2560x1440px</option>
+    <option value="24-1920:1080">24" 1920x1080px</option>
+  </select>
+  <select class="display-selector-js">
     <option value="49-5120:1440">49" 5120x1440px</option>
     <option value="32-3840:2160">32" 3840x2160px</option>
     <option value="32-2560:1440">32" 2560x1440px</option>
-    <option value="24-2560:1440">24" 2560x1440px</option>
+    <option value="24-2560:1440" selected>24" 2560x1440px</option>
     <option value="24-1920:1080">24" 1920x1080px</option>
   </select>
   <svg id="render" width="70%" style="margin: 2rem">
@@ -78,31 +85,47 @@
       svg.appendChild(g);
     }
 
+    function renderDisplays(displaySelects, svg, output) {
+      // Calculate the properties for the listed displays
+      const displays = displaySelects
+        .map(x => parseDisplayString(x.value))
+        .map(x => ({
+          ...getDisplayScaleProperties(x),
+          ...x
+        }));
+
+      // Output the calculated display properties for debug purposes
+      output.innerHTML = JSON.stringify(displays, null, 2);
+
+      // Clear the render svg
+      
+      // Set the render size of the svg
+      const renderSize = getRenderSize(displays);
+      
+      svg.innerHTML = '';
+      svg.setAttribute('viewBox', `0 0 ${renderSize.width} ${renderSize.height}`);
+
+      displays.forEach((display, i) => renderDisplay(display, colors[i], renderSize, svg));
+    }
+
     const colors = [
-      'black',
       'red',
       'blue',
       'green',
       'yellow'
     ];
 
-    // Calculate the properties for the listed displays
-    const displays = Array.from(document.getElementsByTagName('select').item(0).children)
-      .map(x => parseDisplayString(x.value))
-      .map(x => ({
-        ...getDisplayScaleProperties(x),
-        ...x
-      }));
+    const displaySelects = Array.from(document.getElementsByClassName('display-selector-js'));
 
-    // Output the calculated display properties for debug purposes      
-    document.getElementById('output').innerHTML = JSON.stringify(displays, null, 2);
-
-    // Set the render size of the svg
-    const renderSize = getRenderSize(displays);
+    const output = document.getElementById('output');
     const svg = document.getElementById('render');
-    svg.setAttribute('viewBox', `0 0 ${renderSize.width} ${renderSize.height}`);
 
-    displays.forEach((display, i) => renderDisplay(display, colors[i], renderSize, svg));
+    renderDisplays(displaySelects, svg, output);
+
+    displaySelects.forEach(displaySelect => {
+      displaySelect.addEventListener('change', () => renderDisplays(displaySelects, svg, output));
+    });
+
   </script>
 </body>
 
