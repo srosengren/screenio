@@ -1,0 +1,109 @@
+<!doctype html>
+<html class="no-js" lang="">
+
+<head>
+  <meta charset="utf-8">
+  <title>Screenio</title>
+  <meta name="description" content="Compare how different screen sizes and PPI compares to eachother">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <meta name="theme-color" content="#fafafa">
+</head>
+
+<body>
+  <select>
+    <option value="49-5120:1440">49" 5120x1440px</option>
+    <option value="32-3840:2160">32" 3840x2160px</option>
+    <option value="32-2560:1440">32" 2560x1440px</option>
+    <option value="24-2560:1440">24" 2560x1440px</option>
+    <option value="24-1920:1080">24" 1920x1080px</option>
+  </select>
+  <svg id="render" width="70%" style="margin: 2rem">
+  </svg>
+  <pre id="output"></pre>
+  <script>
+    /*
+     * Calculates the PPI and scaled size of a size:resolution combo.
+     */
+    function getDisplayScaleProperties(input) {
+      const resolutionPxHypothenuse = Math.sqrt(Math.pow(input.resolutionPx.height, 2) + Math.pow(input.resolutionPx.width, 2));
+      const ppi = resolutionPxHypothenuse / input.physicalIn.hypothenuse;
+      return {
+        ppi,
+        scaledPx: {
+          // TODO: Currently this gives different sizes for the same screen size
+          width: Math.round(input.resolutionPx.width / ppi * 100),
+          height: Math.round(input.resolutionPx.height / ppi * 100)
+        }
+      }
+    }
+
+    /*
+     * Takes a string of format {inches}-{resX}:{resY}. Example: 24-1920:1080
+     */
+    function parseDisplayString(displayString) {
+      const sizeTokenPosition = displayString.indexOf('-');
+      const resolutionTokenPosition = displayString.indexOf(':');
+      return {
+        physicalIn: {
+          hypothenuse: displayString.substring(0, sizeTokenPosition)
+        },
+        resolutionPx: {
+          width: displayString.substring(sizeTokenPosition + 1, resolutionTokenPosition),
+          height: displayString.substring(resolutionTokenPosition + 1)
+        }
+      };
+    }
+
+    function getRenderSize(displays) {
+      return {
+        width: Math.max(...displays.map(x => x.scaledPx.width)),
+        height: Math.max(...displays.map(x => x.scaledPx.height))
+      }
+    }
+
+    function renderDisplay(display, color, renderSize, svg) {
+      const g = document.createElementNS('http://www.w3.org/2000/svg', "g");
+      g.setAttribute('fill', color);
+
+      const rect = document.createElementNS('http://www.w3.org/2000/svg', "rect");
+      rect.setAttribute('width', display.scaledPx.width);
+      rect.setAttribute('height', display.scaledPx.height);
+      rect.setAttribute('x', (renderSize.width - display.scaledPx.width) / 2);
+      rect.setAttribute('y', (renderSize.height - display.scaledPx.height) / 2);
+      rect.style = 'opacity: 0.5';
+
+      g.appendChild(rect);
+
+      svg.appendChild(g);
+    }
+
+    const colors = [
+      'black',
+      'red',
+      'blue',
+      'green',
+      'yellow'
+    ];
+
+    // Calculate the properties for the listed displays
+    const displays = Array.from(document.getElementsByTagName('select').item(0).children)
+      .map(x => parseDisplayString(x.value))
+      .map(x => ({
+        ...getDisplayScaleProperties(x),
+        ...x
+      }));
+
+    // Output the calculated display properties for debug purposes      
+    document.getElementById('output').innerHTML = JSON.stringify(displays, null, 2);
+
+    // Set the render size of the svg
+    const renderSize = getRenderSize(displays);
+    const svg = document.getElementById('render');
+    svg.setAttribute('viewBox', `0 0 ${renderSize.width} ${renderSize.height}`);
+
+    displays.forEach((display, i) => renderDisplay(display, colors[i], renderSize, svg));
+  </script>
+</body>
+
+</html>
