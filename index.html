@@ -29,6 +29,9 @@
   </svg>
   <pre id="output"></pre>
   <script>
+
+    const physicalScale = 100;
+
     /*
      * Calculates the PPI and scaled size of a size:resolution combo.
      */
@@ -39,8 +42,8 @@
         ppi,
         scaledPx: {
           // TODO: Currently this gives different sizes for the same screen size
-          width: Math.round(input.resolutionPx.width / ppi * 100),
-          height: Math.round(input.resolutionPx.height / ppi * 100)
+          width: Math.round(input.resolutionPx.width / ppi * physicalScale),
+          height: Math.round(input.resolutionPx.height / ppi * physicalScale)
         }
       }
     }
@@ -68,8 +71,16 @@
         height: Math.max(...displays.map(x => x.scaledPx.height))
       }
     }
+    
+    function getRelativeObjectResolutionSizeSize(displays) {
+      const leastResolutionHeight = Math.min(...displays.map(x => x.resolutionPx.height));
+      // Assume that a displays width is always greater than its height
+      return {
+        height: leastResolutionHeight / 3
+      };
+    }
 
-    function renderDisplay(display, color, renderSize, svg) {
+    function renderDisplay(display, color, relativeObjectSize, renderSize, svg) {
       const g = document.createElementNS('http://www.w3.org/2000/svg', "g");
       g.setAttribute('fill', color);
 
@@ -79,8 +90,17 @@
       rect.setAttribute('x', (renderSize.width - display.scaledPx.width) / 2);
       rect.setAttribute('y', (renderSize.height - display.scaledPx.height) / 2);
       rect.style = 'opacity: 0.5';
+      
+      const relativeObject = document.createElementNS('http://www.w3.org/2000/svg', "text");
+      relativeObject.innerHTML = 'A';
+      relativeObject.setAttribute('x', '50%');
+      relativeObject.setAttribute('y', '50%');
+      relativeObject.setAttribute('dominant-baseline', 'middle');
+      relativeObject.setAttribute('text-anchor', 'middle');
+      relativeObject.style = `font-size: ${relativeObjectSize.height / display.ppi * physicalScale}px`;
 
       g.appendChild(rect);
+      g.appendChild(relativeObject);
 
       svg.appendChild(g);
     }
@@ -101,11 +121,12 @@
       
       // Set the render size of the svg
       const renderSize = getRenderSize(displays);
+      const relativeObjectSize = getRelativeObjectResolutionSizeSize(displays);
       
       svg.innerHTML = '';
       svg.setAttribute('viewBox', `0 0 ${renderSize.width} ${renderSize.height}`);
 
-      displays.forEach((display, i) => renderDisplay(display, colors[i], renderSize, svg));
+      displays.forEach((display, i) => renderDisplay(display, colors[i], relativeObjectSize, renderSize, svg));
     }
 
     const colors = [
