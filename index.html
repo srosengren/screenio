@@ -72,7 +72,7 @@
         height: Math.max(...displays.map(x => x.scaledPx.height))
       }
     }
-    
+
     function getRelativeObjectResolutionSizeSize(displays) {
       const leastResolutionHeight = Math.min(...displays.map(x => x.resolutionPx.height));
       // Assume that a displays width is always greater than its height
@@ -103,29 +103,29 @@
       l0 -${h}
       q0,-${r} ${r},-${r}`);
       chrome.style = 'opacity: 0.5';
-      
+
       const rect = document.createElementNS('http://www.w3.org/2000/svg', "rect");
       rect.setAttribute('width', display.scaledPx.width);
       rect.setAttribute('height', display.scaledPx.height);
       rect.setAttribute('x', ((renderSize.width - display.scaledPx.width) / 2) + r);
       rect.setAttribute('y', ((renderSize.height - display.scaledPx.height) / 2) + r);
       rect.style = 'opacity: 0.5';
-      
-      
+
+
       g.appendChild(chrome);
       g.appendChild(rect);
-      
+
       return g;
     }
-    
-    function renderRelativeObject(display, relativeObjectSize, color) {
+
+    function renderRelativeObject(displayRelativeObjectSize, color) {
       const relativeObject = document.createElementNS('http://www.w3.org/2000/svg', "text");
       relativeObject.innerHTML = 'A';
       relativeObject.setAttribute('x', '50%');
       relativeObject.setAttribute('y', '50%');
       relativeObject.setAttribute('dominant-baseline', 'middle');
       relativeObject.setAttribute('text-anchor', 'middle');
-      relativeObject.style = `fill: ${color}; font-size: ${relativeObjectSize.height / display.ppi * physicalScale}px`;
+      relativeObject.style = `fill: ${color}; font-size: ${displayRelativeObjectSize}px`;
 
       return relativeObject;
     }
@@ -142,20 +142,28 @@
       // Output the calculated display properties for debug purposes
       output.innerHTML = JSON.stringify(displays, null, 2);
 
-      // Clear the render svg
-      
+
       // Set the render size of the svg
       const renderSize = getRenderSize(displays);
       const relativeObjectSize = getRelativeObjectResolutionSizeSize(displays);
-      
+
+      // Clear the render svg
       svg.innerHTML = '';
       svg.setAttribute('viewBox', `0 0 ${renderSize.width + (2 * chromeRadius)} ${renderSize.height + (2 * chromeRadius)}`);
 
       displays.forEach((display, i) => {
         svg.appendChild(renderDisplay(display, colors[i], renderSize));
       });
-      displays.forEach((display, i) => {
-        svg.appendChild(renderRelativeObject(display, relativeObjectSize, colors[i]));
+
+      const displaysByRelativeSize = displays.map((x, i) => ({
+        ppi: x.ppi,
+        color: colors[i],
+        displayRelativeObjectSize: relativeObjectSize.height / x.ppi * physicalScale
+      }))
+        .sort((a, b) => b.displayRelativeObjectSize - a.displayRelativeObjectSize);
+
+      displaysByRelativeSize.forEach(display => {
+        svg.appendChild(renderRelativeObject(display.displayRelativeObjectSize, display.color));
       });
     }
 
