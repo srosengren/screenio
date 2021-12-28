@@ -31,6 +31,7 @@
   <script>
 
     const physicalScale = 100;
+    const chromeRadius = 50;
 
     /*
      * Calculates the PPI and scaled size of a size:resolution combo.
@@ -80,29 +81,53 @@
       };
     }
 
-    function renderDisplay(display, color, relativeObjectSize, renderSize, svg) {
+    function renderDisplay(display, color, renderSize) {
       const g = document.createElementNS('http://www.w3.org/2000/svg', "g");
       g.setAttribute('fill', color);
 
+      const chrome = document.createElementNS('http://www.w3.org/2000/svg', "path");
+      const h = display.scaledPx.height;
+      const w = display.scaledPx.width;
+      const r = chromeRadius;
+      // originX gets an extra "+ r" as we need to make room for the closing q.
+      const originX = ((renderSize.width - display.scaledPx.width) / 2) + r;
+      const originY = ((renderSize.height - display.scaledPx.height) / 2);
+      chrome.setAttribute('d', `
+      M${originX} ${originY}
+      l ${w} 0
+      q ${r},0 ${r},${r}
+      l0 ${h}
+      q 0,${r} -${r},${r}
+      l-${w} 0
+      q -${r},0 -${r},-${r}
+      l0 -${h}
+      q0,-${r} ${r},-${r}`);
+      chrome.style = 'opacity: 0.5';
+      
       const rect = document.createElementNS('http://www.w3.org/2000/svg', "rect");
       rect.setAttribute('width', display.scaledPx.width);
       rect.setAttribute('height', display.scaledPx.height);
-      rect.setAttribute('x', (renderSize.width - display.scaledPx.width) / 2);
-      rect.setAttribute('y', (renderSize.height - display.scaledPx.height) / 2);
+      rect.setAttribute('x', ((renderSize.width - display.scaledPx.width) / 2) + r);
+      rect.setAttribute('y', ((renderSize.height - display.scaledPx.height) / 2) + r);
       rect.style = 'opacity: 0.5';
       
+      
+      g.appendChild(chrome);
+      g.appendChild(rect);
+      
+      return g;
+    }
+    
+    function renderRelativeObject(display, relativeObjectSize, color) {
       const relativeObject = document.createElementNS('http://www.w3.org/2000/svg', "text");
       relativeObject.innerHTML = 'A';
       relativeObject.setAttribute('x', '50%');
       relativeObject.setAttribute('y', '50%');
       relativeObject.setAttribute('dominant-baseline', 'middle');
       relativeObject.setAttribute('text-anchor', 'middle');
-      relativeObject.style = `font-size: ${relativeObjectSize.height / display.ppi * physicalScale}px`;
+      relativeObject.style = `fill: ${color}; font-size: ${relativeObjectSize.height / display.ppi * physicalScale}px`;
 
-      g.appendChild(rect);
-      g.appendChild(relativeObject);
-
-      svg.appendChild(g);
+      return relativeObject;
     }
 
     function renderDisplays(displaySelects, svg, output) {
@@ -124,9 +149,14 @@
       const relativeObjectSize = getRelativeObjectResolutionSizeSize(displays);
       
       svg.innerHTML = '';
-      svg.setAttribute('viewBox', `0 0 ${renderSize.width} ${renderSize.height}`);
+      svg.setAttribute('viewBox', `0 0 ${renderSize.width + (2 * chromeRadius)} ${renderSize.height + (2 * chromeRadius)}`);
 
-      displays.forEach((display, i) => renderDisplay(display, colors[i], relativeObjectSize, renderSize, svg));
+      displays.forEach((display, i) => {
+        svg.appendChild(renderDisplay(display, colors[i], renderSize));
+      });
+      displays.forEach((display, i) => {
+        svg.appendChild(renderRelativeObject(display, relativeObjectSize, colors[i]));
+      });
     }
 
     const colors = [
