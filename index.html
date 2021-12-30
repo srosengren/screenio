@@ -15,6 +15,7 @@
     <option value="49-5120:1440">49" 5120x1440px</option>
     <option value="32-3840:2160" selected>32" 3840x2160px</option>
     <option value="32-2560:1440">32" 2560x1440px</option>
+    <option value="32-1920:1080">32" 1920x1080px</option>
     <option value="24-2560:1440">24" 2560x1440px</option>
     <option value="24-1920:1080">24" 1920x1080px</option>
   </select>
@@ -22,16 +23,18 @@
     <option value="49-5120:1440">49" 5120x1440px</option>
     <option value="32-3840:2160">32" 3840x2160px</option>
     <option value="32-2560:1440">32" 2560x1440px</option>
+    <option value="32-1920:1080">32" 1920x1080px</option>
     <option value="24-2560:1440" selected>24" 2560x1440px</option>
     <option value="24-1920:1080">24" 1920x1080px</option>
   </select>
   <svg id="render" width="70%" style="margin: 2rem">
   </svg>
+  <p id="explanation"></p>
   <pre id="output"></pre>
   <script>
 
     const physicalScale = 100;
-    const chromeRadius = 50;
+    const chromeRadius = 25;
 
     /*
      * Calculates the PPI and scaled size of a size:resolution combo.
@@ -39,12 +42,14 @@
     function getDisplayScaleProperties(input) {
       const resolutionPxHypothenuse = Math.sqrt(Math.pow(input.resolutionPx.height, 2) + Math.pow(input.resolutionPx.width, 2));
       const ppi = resolutionPxHypothenuse / input.physicalIn.hypothenuse;
+      const width = Math.round(input.resolutionPx.width / ppi * physicalScale);
+      const height = Math.round(input.resolutionPx.height / ppi * physicalScale);
       return {
         ppi,
         scaledPx: {
-          // TODO: Currently this gives different sizes for the same screen size
-          width: Math.round(input.resolutionPx.width / ppi * physicalScale),
-          height: Math.round(input.resolutionPx.height / ppi * physicalScale)
+          width,
+          height,
+          area: width * height
         }
       }
     }
@@ -55,13 +60,16 @@
     function parseDisplayString(displayString) {
       const sizeTokenPosition = displayString.indexOf('-');
       const resolutionTokenPosition = displayString.indexOf(':');
+      const width = displayString.substring(sizeTokenPosition + 1, resolutionTokenPosition);
+      const height = displayString.substring(resolutionTokenPosition + 1);
       return {
         physicalIn: {
           hypothenuse: displayString.substring(0, sizeTokenPosition)
         },
         resolutionPx: {
-          width: displayString.substring(sizeTokenPosition + 1, resolutionTokenPosition),
-          height: displayString.substring(resolutionTokenPosition + 1)
+          width,
+          height,
+          area: width * height
         }
       };
     }
@@ -102,7 +110,7 @@
       q -${r},0 -${r},-${r}
       l0 -${h}
       q0,-${r} ${r},-${r}`);
-      chrome.style = 'opacity: 0.5';
+      chrome.style = 'opacity: 1; fill: #3f3d56';
 
       const rect = document.createElementNS('http://www.w3.org/2000/svg', "rect");
       rect.setAttribute('width', display.scaledPx.width);
@@ -132,39 +140,62 @@
 
     function renderDisplays(displaySelects, svg, output) {
       // Calculate the properties for the listed displays
-      const displays = displaySelects
+      const displaysByPhysicalArea = displaySelects
         .map(x => parseDisplayString(x.value))
-        .map(x => ({
+        .map((x, i) => ({
+          name: i + 1,
           ...getDisplayScaleProperties(x),
           ...x
-        }));
+        }))
+        // It might be better to sort based on height,
+        // initial thought is that it might feel better in the case of ultrawides (which is often sent to the back with the current sort)
+        .sort((a, b) => b.scaledPx.area - a.scaledPx.area);
 
       // Output the calculated display properties for debug purposes
-      output.innerHTML = JSON.stringify(displays, null, 2);
-
+      output.innerHTML = JSON.stringify(displaysByPhysicalArea, null, 2);
 
       // Set the render size of the svg
-      const renderSize = getRenderSize(displays);
-      const relativeObjectSize = getRelativeObjectResolutionSizeSize(displays);
+      const renderSize = getRenderSize(displaysByPhysicalArea);
+      const unScaledRelativeObjectSize = getRelativeObjectResolutionSizeSize(displaysByPhysicalArea);
 
       // Clear the render svg
       svg.innerHTML = '';
       svg.setAttribute('viewBox', `0 0 ${renderSize.width + (2 * chromeRadius)} ${renderSize.height + (2 * chromeRadius)}`);
 
-      displays.forEach((display, i) => {
+      displaysByPhysicalArea.forEach((display, i) => {
         svg.appendChild(renderDisplay(display, colors[i], renderSize));
       });
 
-      const displaysByRelativeSize = displays.map((x, i) => ({
+      const displaysByRelativeSize = displaysByPhysicalArea.map((x, i) => ({
         ppi: x.ppi,
         color: colors[i],
-        displayRelativeObjectSize: relativeObjectSize.height / x.ppi * physicalScale
+        scaledRelativeObjectSize: unScaledRelativeObjectSize.height / x.ppi * physicalScale
       }))
-        .sort((a, b) => b.displayRelativeObjectSize - a.displayRelativeObjectSize);
+        .sort((a, b) => b.scaledRelativeObjectSize - a.scaledRelativeObjectSize);
 
       displaysByRelativeSize.forEach(display => {
-        svg.appendChild(renderRelativeObject(display.displayRelativeObjectSize, display.color));
+        svg.appendChild(renderRelativeObject(display.scaledRelativeObjectSize, display.color));
       });
+
+      // TODO: Verify the differences as we're always calculating from higher > lower, but text mentions smaller/larger
+      const relativeDifference = Math.round(displaysByRelativeSize[0].scaledRelativeObjectSize / displaysByRelativeSize[1].scaledRelativeObjectSize * 100 - 100);
+      const physicalDifference = Math.round(displaysByPhysicalArea[0].scaledPx.area / displaysByPhysicalArea[1].scaledPx.area * 100 - 100);
+      const resolutionDifference = Math.round(displaysByPhysicalArea[0].resolutionPx.area / displaysByPhysicalArea[1].resolutionPx.area * 100 - 100);
+
+      const d1 = displaysByPhysicalArea[0].name;
+      const d2 = displaysByPhysicalArea[1].name;
+
+      let ex = '';
+      if (physicalDifference == 0 && resolutionDifference == 0) ex = 'These displays are of equal size and has the same resolution area.';
+      else if (physicalDifference == 0 && resolutionDifference > 0) ex = `Display ${d1} will fit ${resolutionDifference}% more content than display ${d2}, but objects will appear ${relativeDifference}% smaller, even though the displays are the same physical size.`;
+      else if (physicalDifference == 0 && resolutionDifference < 0) ex = `Display ${d1} will fit ${Math.abs(resolutionDifference)}% less content than display ${d2} , and objects will appear ${relativeDifference}% larger, even though the displays are the same physical size.`;
+      else if (physicalDifference > 0 && resolutionDifference == 0) ex = `Display ${d1} will fit the same amount of content as display ${d2}, but objects will be ${relativeDifference}% larger due to display ${d1}'s ${physicalDifference}% larger physical size.`;
+      else if (physicalDifference > 0 && resolutionDifference > 0 && relativeDifference == 0) ex = `Display ${d1} will fit ${resolutionDifference}% more content than display ${d2}, but objects will have the same size due to display ${d1}'s ${physicalDifference}% larger physical size.`;
+      else if (physicalDifference > 0 && resolutionDifference > 0 && relativeDifference > 0) ex = `Display ${d1} is ${physicalDifference}% larger than display ${d2}, and will fit ${resolutionDifference}% more content, but objects will appear smaller due to display ${d1}'s higher ppi.`;
+      else if (physicalDifference > 0 && resolutionDifference > 0 && relativeDifference < 0) ex = `Display ${d1} is ${physicalDifference}% larger than display ${d2} and will fit ${resolutionDifference}% more content, but objects will appear ${Math.abs(relativeDifference)}% bigger due to display x's lower ppi.`;
+      else if (physicalDifference > 0 && resolutionDifference < 0) ex = `Display ${d1} is ${physicalDifference}% larger than display ${d2}, but will fit ${Math.abs(resolutionDifference)}% less content. Objects will appear larger on display ${d1} than on display ${d2} due to display ${d1}'s lower ppi.`;
+      
+      document.getElementById('explanation').innerHTML = ex;
     }
 
     const colors = [
