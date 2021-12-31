@@ -11,7 +11,7 @@
 </head>
 
 <body>
-  <div class="display-selector-js">
+  <div class="display-selector-js" style="color: red">
     <input type="range" min="0.5" max="100" step="0.5" value="32">
     <select>
       <option value="6016x3384">6016x3384px</option>
@@ -28,7 +28,7 @@
       <option value="1024x768">1024x768px</option>
     </select>
   </div>
-  <div class="display-selector-js">
+  <div class="display-selector-js" style="color: blue">
     <input type="range" min="0.5" max="100" step="0.5" value="24">
     <select>
       <option value="6016x3384">6016x3384px</option>
@@ -77,6 +77,7 @@
       const width = resolution.substring(0, resolution.indexOf('x'));
       const height = resolution.substring(resolution.indexOf('x') + 1);
       return {
+        color: g.style.color,
         physicalIn: {
           hypothenuse: g.querySelector('input[type="range"]').value
         },
@@ -103,9 +104,9 @@
       };
     }
 
-    function renderDisplay(display, color, renderSize) {
+    function renderDisplay(display, renderSize) {
       const g = document.createElementNS('http://www.w3.org/2000/svg', "g");
-      g.setAttribute('fill', color);
+      g.setAttribute('fill', display.color);
 
       const chrome = document.createElementNS('http://www.w3.org/2000/svg', "path");
       const h = display.scaledPx.height;
@@ -177,12 +178,12 @@
       svg.setAttribute('viewBox', `0 0 ${renderSize.width + (2 * chromeRadius)} ${renderSize.height + (2 * chromeRadius)}`);
 
       displaysByPhysicalArea.forEach((display, i) => {
-        svg.appendChild(renderDisplay(display, colors[i], renderSize));
+        svg.appendChild(renderDisplay(display, renderSize));
       });
 
       const displaysByRelativeSize = displaysByPhysicalArea.map((x, i) => ({
         ppi: x.ppi,
-        color: colors[i],
+        color: x.color,
         scaledRelativeObjectSize: unScaledRelativeObjectSize.height / x.ppi * physicalScale
       }))
         .sort((a, b) => b.scaledRelativeObjectSize - a.scaledRelativeObjectSize);
@@ -211,13 +212,6 @@
       
       document.getElementById('explanation').innerHTML = ex;
     }
-
-    const colors = [
-      'red',
-      'blue',
-      'green',
-      'yellow'
-    ];
 
     const selectorGroups = Array.from(document.getElementsByClassName('display-selector-js'));
 
