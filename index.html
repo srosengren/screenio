@@ -45,10 +45,11 @@
       <option value="1024x768">1024x768px</option>
     </select>
   </div>
-  <svg id="render" width="70%" style="margin: 2rem">
+  <div style="text-align: center; padding: 1rem">
+    <svg id="render" style="margin: 2rem; max-height: 80vh; margin: auto"></svg>
+  </div>
   </svg>
   <p id="explanation"></p>
-  <pre id="output"></pre>
   <script>
 
     const physicalScale = 100;
@@ -165,9 +166,6 @@
         // It might be better to sort based on height,
         // initial thought is that it might feel better in the case of ultrawides (which is often sent to the back with the current sort)
         .sort((a, b) => b.scaledPx.area - a.scaledPx.area);
-
-      // Output the calculated display properties for debug purposes
-      output.innerHTML = JSON.stringify(displaysByPhysicalArea, null, 2);
 
       // Set the render size of the svg
       const renderSize = getRenderSize(displaysByPhysicalArea);
