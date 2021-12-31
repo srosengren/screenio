@@ -11,22 +11,40 @@
 </head>
 
 <body>
-  <select class="display-selector-js">
-    <option value="49-5120:1440">49" 5120x1440px</option>
-    <option value="32-3840:2160" selected>32" 3840x2160px</option>
-    <option value="32-2560:1440">32" 2560x1440px</option>
-    <option value="32-1920:1080">32" 1920x1080px</option>
-    <option value="24-2560:1440">24" 2560x1440px</option>
-    <option value="24-1920:1080">24" 1920x1080px</option>
-  </select>
-  <select class="display-selector-js">
-    <option value="49-5120:1440">49" 5120x1440px</option>
-    <option value="32-3840:2160">32" 3840x2160px</option>
-    <option value="32-2560:1440">32" 2560x1440px</option>
-    <option value="32-1920:1080">32" 1920x1080px</option>
-    <option value="24-2560:1440" selected>24" 2560x1440px</option>
-    <option value="24-1920:1080">24" 1920x1080px</option>
-  </select>
+  <div class="display-selector-js">
+    <input type="range" min="0.5" max="100" step="0.5" value="32">
+    <select>
+      <option value="6016x3384">6016x3384px</option>
+      <option value="5120x2880">5120x2880px</option>
+      <option value="5120x1440">5120x1440px</option>
+      <option value="3840x2160">3840x2160px</option>
+      <option value="3440x1440">3440x1440px</option>
+      <option value="2560x1600">2560x1600px</option>
+      <option value="2560x1440" selected>2560x1440px</option>
+      <option value="2560x1080">2560x1080px</option>
+      <option value="1920x1200">1920x1200px</option>
+      <option value="1920x1080">1920x1080px</option>
+      <option value="1280x1024">1280x1024px</option>
+      <option value="1024x768">1024x768px</option>
+    </select>
+  </div>
+  <div class="display-selector-js">
+    <input type="range" min="0.5" max="100" step="0.5" value="24">
+    <select>
+      <option value="6016x3384">6016x3384px</option>
+      <option value="5120x2880">5120x2880px</option>
+      <option value="5120x1440">5120x1440px</option>
+      <option value="3840x2160">3840x2160px</option>
+      <option value="3440x1440">3440x1440px</option>
+      <option value="2560x1600">2560x1600px</option>
+      <option value="2560x1440">2560x1440px</option>
+      <option value="2560x1080">2560x1080px</option>
+      <option value="1920x1200">1920x1200px</option>
+      <option value="1920x1080" selected>1920x1080px</option>
+      <option value="1280x1024">1280x1024px</option>
+      <option value="1024x768">1024x768px</option>
+    </select>
+  </div>
   <svg id="render" width="70%" style="margin: 2rem">
   </svg>
   <p id="explanation"></p>
@@ -54,17 +72,13 @@
       }
     }
 
-    /*
-     * Takes a string of format {inches}-{resX}:{resY}. Example: 24-1920:1080
-     */
-    function parseDisplayString(displayString) {
-      const sizeTokenPosition = displayString.indexOf('-');
-      const resolutionTokenPosition = displayString.indexOf(':');
-      const width = displayString.substring(sizeTokenPosition + 1, resolutionTokenPosition);
-      const height = displayString.substring(resolutionTokenPosition + 1);
+    function getDisplayFromGroup(g) {
+      const resolution = g.querySelector('select').value;
+      const width = resolution.substring(0, resolution.indexOf('x'));
+      const height = resolution.substring(resolution.indexOf('x') + 1);
       return {
         physicalIn: {
-          hypothenuse: displayString.substring(0, sizeTokenPosition)
+          hypothenuse: g.querySelector('input[type="range"]').value
         },
         resolutionPx: {
           width,
@@ -138,10 +152,10 @@
       return relativeObject;
     }
 
-    function renderDisplays(displaySelects, svg, output) {
+    function renderDisplays(displaySelectGroups, svg, output) {
       // Calculate the properties for the listed displays
-      const displaysByPhysicalArea = displaySelects
-        .map(x => parseDisplayString(x.value))
+      const displaysByPhysicalArea = displaySelectGroups
+        .map(g => getDisplayFromGroup(g))
         .map((x, i) => ({
           name: i + 1,
           ...getDisplayScaleProperties(x),
@@ -205,16 +219,19 @@
       'yellow'
     ];
 
-    const displaySelects = Array.from(document.getElementsByClassName('display-selector-js'));
+    const selectorGroups = Array.from(document.getElementsByClassName('display-selector-js'));
 
     const output = document.getElementById('output');
     const svg = document.getElementById('render');
 
-    renderDisplays(displaySelects, svg, output);
+    renderDisplays(selectorGroups, svg, output);
 
-    displaySelects.forEach(displaySelect => {
-      displaySelect.addEventListener('change', () => renderDisplays(displaySelects, svg, output));
-    });
+    selectorGroups
+      .map(g => Array.from(g.querySelectorAll('input[type="range"], select')))
+      .reduce((a, c) => [...c, ...a], [])
+      .forEach(displaySelect => {
+        displaySelect.addEventListener('input', () => renderDisplays(selectorGroups, svg, output));
+      });
 
   </script>
 </body>
