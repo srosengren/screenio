@@ -86,6 +86,14 @@
     .display-selector input {
       max-width: 5rem;
     }
+
+    #explanation {
+      text-align: center;
+      font-size: 1.5rem;
+      color: #929292;
+      font-weight: 300;
+      margin: 4rem 2rem;
+    }
   </style>
 </head>
 
@@ -342,20 +350,20 @@
       const physicalDifference = Math.round(displaysByPhysicalArea[0].scaledPx.area / displaysByPhysicalArea[1].scaledPx.area * 100 - 100);
       const resolutionDifference = Math.round(displaysByPhysicalArea[0].resolutionPx.area / displaysByPhysicalArea[1].resolutionPx.area * 100 - 100);
 
-      const d1 = displaysByPhysicalArea[0].name;
-      const d2 = displaysByPhysicalArea[1].name;
+      const d1 = capitalize => `<span style="color: ${displaysByPhysicalArea[0].color.primary}">${capitalize ? 'D' : 'd'}isplay ${displaysByPhysicalArea[0].name}</span>`;
+      const d2 = capitalize => `<span style="color: ${displaysByPhysicalArea[1].color.primary}">${capitalize ? 'D' : 'd'}isplay ${displaysByPhysicalArea[1].name}</span>`;
 
       let ex = '';
       if (physicalDifference == 0 && resolutionDifference == 0) ex = 'These displays are of equal size and has the same resolution area.';
-      else if (physicalDifference == 0 && resolutionDifference > 0) ex = `Display ${d1} will fit ${resolutionDifference}% more content than display ${d2}, but objects will appear ${relativeDifference}% smaller, even though the displays are the same physical size.`;
-      else if (physicalDifference == 0 && resolutionDifference < 0) ex = `Display ${d1} will fit ${Math.abs(resolutionDifference)}% less content than display ${d2} , and objects will appear ${relativeDifference}% larger, even though the displays are the same physical size.`;
-      else if (physicalDifference > 0 && resolutionDifference == 0) ex = `Display ${d1} will fit the same amount of content as display ${d2}, but objects will be ${relativeDifference}% larger due to display ${d1}'s ${physicalDifference}% larger physical size.`;
-      else if (physicalDifference > 0 && resolutionDifference > 0 && relativeDifference == 0) ex = `Display ${d1} will fit ${resolutionDifference}% more content than display ${d2}, but objects will have the same size due to display ${d1}'s ${physicalDifference}% larger physical size.`;
-      else if (physicalDifference > 0 && resolutionDifference > 0 && relativeDifference > 0) ex = `Display ${d1} is ${physicalDifference}% larger than display ${d2}, and will fit ${resolutionDifference}% more content, but objects will appear smaller due to display ${d1}'s higher ppi.`;
-      else if (physicalDifference > 0 && resolutionDifference > 0 && relativeDifference < 0) ex = `Display ${d1} is ${physicalDifference}% larger than display ${d2} and will fit ${resolutionDifference}% more content, but objects will appear ${Math.abs(relativeDifference)}% bigger due to display x's lower ppi.`;
-      else if (physicalDifference > 0 && resolutionDifference < 0) ex = `Display ${d1} is ${physicalDifference}% larger than display ${d2}, but will fit ${Math.abs(resolutionDifference)}% less content. Objects will appear larger on display ${d1} than on display ${d2} due to display ${d1}'s lower ppi.`;
+      else if (physicalDifference == 0 && resolutionDifference > 0) ex = `${d1(true)} will fit ${resolutionDifference}% more content than ${d2(false)}, but objects will appear ${relativeDifference}% smaller, even though the displays are the same physical size.`;
+      else if (physicalDifference == 0 && resolutionDifference < 0) ex = `${d1(true)} will fit ${Math.abs(resolutionDifference)}% less content than ${d2(false)} , and objects will appear ${relativeDifference}% larger, even though the displays are the same physical size.`;
+      else if (physicalDifference > 0 && resolutionDifference == 0) ex = `${d1(true)} will fit the same amount of content as ${d2(false)}, but objects will be ${relativeDifference}% larger due to ${d1(false)}'s ${physicalDifference}% larger physical size.`;
+      else if (physicalDifference > 0 && resolutionDifference > 0 && relativeDifference == 0) ex = `${d1(true)} will fit ${resolutionDifference}% more content than ${d2(false)}, but objects will have the same size due to ${d1(false)}'s ${physicalDifference}% larger physical size.`;
+      else if (physicalDifference > 0 && resolutionDifference > 0 && relativeDifference > 0) ex = `${d1(true)} is ${physicalDifference}% larger than ${d2(false)}, and will fit ${resolutionDifference}% more content, but objects will appear smaller due to ${d1(false)}'s higher ppi.`;
+      else if (physicalDifference > 0 && resolutionDifference > 0 && relativeDifference < 0) ex = `${d1(true)} is ${physicalDifference}% larger than ${d2(false)} and will fit ${resolutionDifference}% more content, but objects will appear ${Math.abs(relativeDifference)}% bigger due to display x's lower ppi.`;
+      else if (physicalDifference > 0 && resolutionDifference < 0) ex = `${d1(true)} is ${physicalDifference}% larger than ${d2(false)}, but will fit ${Math.abs(resolutionDifference)}% less content. Objects will appear larger on ${d1(false)} than on ${d2(false)} due to ${d1(false)}'s lower ppi.`;
 
-      document.getElementById('explanation').innerHTML = ex;
+      document.getElementById('explanation').innerHTML = `"${ex}"`;
     }
 
     const selectorGroups = Array.from(document.getElementsByClassName('display-selector-js'));
