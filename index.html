@@ -8,45 +8,126 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <meta name="theme-color" content="#fafafa">
+
+  <style>
+    body {
+      min-height: 100vh;
+      margin: 0;
+      font-family: sans-serif;
+      /* background-color: #F3F6F9; */
+    }
+
+    .display-selectors {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .display-selector {
+      margin: 0 1rem 1rem 1rem;
+      display: flex;
+      align-items: center;
+      background: white;
+      border: 1px solid #d2d2d7;
+      border-radius: 1rem;
+    }
+
+    .display-selector:before {
+      content: '';
+      display: inline-block;
+      border-radius: 0.75rem;
+      margin-left: 0.5rem;
+      vertical-align: bottom;
+      border: 1rem solid;
+    }
+
+    .display-selector .title {
+      color: #383838;
+      padding: 0 0.5rem;
+    }
+
+    .display-selector label {
+      color: #383838;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .display-selector span {
+      position: absolute;
+      top: 0.25rem;
+      left: 0.5rem;
+      font-size: 0.8rem;
+    }
+
+    .display-selector input,
+    .display-selector select {
+      padding: 1.25rem 0.5rem 0.5rem 0.5rem;
+      border: solid #d2d2d7 0;
+      border-left-width: 1px;
+      background: none;
+    }
+
+    .display-selector input {
+      max-width: 5rem;
+    }
+  </style>
 </head>
 
 <body>
-  <div class="display-selector-js" style="color: red">
-    <input type="range" min="0.5" max="100" step="0.5" value="32">
-    <select>
-      <option value="6016x3384">6016x3384px</option>
-      <option value="5120x2880">5120x2880px</option>
-      <option value="5120x1440">5120x1440px</option>
-      <option value="3840x2160">3840x2160px</option>
-      <option value="3440x1440">3440x1440px</option>
-      <option value="2560x1600">2560x1600px</option>
-      <option value="2560x1440" selected>2560x1440px</option>
-      <option value="2560x1080">2560x1080px</option>
-      <option value="1920x1200">1920x1200px</option>
-      <option value="1920x1080">1920x1080px</option>
-      <option value="1280x1024">1280x1024px</option>
-      <option value="1024x768">1024x768px</option>
-    </select>
+  <h1 style="text-align: center;">Screenio</h1>
+  <div class="display-selectors">
+    <div class="display-selector-js display-selector" style="color: #FF6E40" data-secondary-color="#DD2C00">
+      <div class="title">Display 1</div>
+      <label>
+        <span>Size (inch)</span>
+        <input type="number" step="0.5" value="32">
+      </label>
+      <label>
+        <span>Resolution</span>
+        <select>
+          <option value="6016x3384">6016x3384px</option>
+          <option value="5120x2880">5120x2880px</option>
+          <option value="5120x1440">5120x1440px</option>
+          <option value="3840x2160">3840x2160px</option>
+          <option value="3440x1440">3440x1440px</option>
+          <option value="2560x1600">2560x1600px</option>
+          <option value="2560x1440" selected>2560x1440px</option>
+          <option value="2560x1080">2560x1080px</option>
+          <option value="1920x1200">1920x1200px</option>
+          <option value="1920x1080">1920x1080px</option>
+          <option value="1280x1024">1280x1024px</option>
+          <option value="1024x768">1024x768px</option>
+        </select>
+      </label>
+    </div>
+    <div class="display-selector-js display-selector" style="color: #0091EA" data-secondary-color="#4FC3F7">
+      <div class="title">Display 2</div>
+      <label>
+        <span>Size (inch)</span>
+        <input type="number" step="0.5" value="24">
+      </label>
+      <label>
+        <span>Resolution</span>
+        <select>
+          <option value="6016x3384">6016x3384px</option>
+          <option value="5120x2880">5120x2880px</option>
+          <option value="5120x1440">5120x1440px</option>
+          <option value="3840x2160">3840x2160px</option>
+          <option value="3440x1440">3440x1440px</option>
+          <option value="2560x1600">2560x1600px</option>
+          <option value="2560x1440">2560x1440px</option>
+          <option value="2560x1080">2560x1080px</option>
+          <option value="1920x1200">1920x1200px</option>
+          <option value="1920x1080" selected>1920x1080px</option>
+          <option value="1280x1024">1280x1024px</option>
+          <option value="1024x768">1024x768px</option>
+        </select>
+      </label>
+    </div>
   </div>
-  <div class="display-selector-js" style="color: blue">
-    <input type="range" min="0.5" max="100" step="0.5" value="24">
-    <select>
-      <option value="6016x3384">6016x3384px</option>
-      <option value="5120x2880">5120x2880px</option>
-      <option value="5120x1440">5120x1440px</option>
-      <option value="3840x2160">3840x2160px</option>
-      <option value="3440x1440">3440x1440px</option>
-      <option value="2560x1600">2560x1600px</option>
-      <option value="2560x1440">2560x1440px</option>
-      <option value="2560x1080">2560x1080px</option>
-      <option value="1920x1200">1920x1200px</option>
-      <option value="1920x1080" selected>1920x1080px</option>
-      <option value="1280x1024">1280x1024px</option>
-      <option value="1024x768">1024x768px</option>
-    </select>
-  </div>
-  <div style="position:relative">
-    <div style="position: relative;text-align: center; padding: 1rem 1rem 0 1rem; z-index:2">
+  <div style="position:relative;padding: 1rem">
+    <div style="position: relative;text-align: center; z-index:2">
       <svg id="render" style="margin: 2rem; max-height: 80vh; margin: auto"></svg>
     </div>
     <div style="position: relative;text-align: center;margin-top: -10%;z-index: 1">
@@ -95,8 +176,8 @@
         <rect x="54" y="112" width="40" height="3" rx="0.48819" fill="#3f3d56" id="rect79" />
       </svg>
     </div>
+    <p id="explanation" style="text-align: center;"></p>
   </div>
-  <p id="explanation"></p>
   <script>
 
     const physicalScale = 100;
@@ -125,9 +206,12 @@
       const width = resolution.substring(0, resolution.indexOf('x'));
       const height = resolution.substring(resolution.indexOf('x') + 1);
       return {
-        color: g.style.color,
+        color: {
+          primary: g.style.color,
+          secondary: g.getAttribute('data-secondary-color')
+        },
         physicalIn: {
-          hypothenuse: g.querySelector('input[type="range"]').value
+          hypothenuse: g.querySelector('input[type="number"]').value
         },
         resolutionPx: {
           width,
@@ -154,7 +238,7 @@
 
     function renderDisplay(display, renderSize) {
       const g = document.createElementNS('http://www.w3.org/2000/svg', "g");
-      g.setAttribute('fill', display.color);
+      g.setAttribute('fill', display.color.primary);
 
       const chrome = document.createElementNS('http://www.w3.org/2000/svg', "path");
       const h = display.scaledPx.height;
@@ -180,7 +264,7 @@
       rect.setAttribute('height', display.scaledPx.height);
       rect.setAttribute('x', ((renderSize.width - display.scaledPx.width) / 2) + r);
       rect.setAttribute('y', ((renderSize.height - display.scaledPx.height) / 2) + r);
-      rect.style = 'opacity: 0.5';
+      // rect.style = 'opacity: 0.5';
 
 
       g.appendChild(chrome);
@@ -228,7 +312,7 @@
 
       const displaysByRelativeSize = displaysByPhysicalArea.map((x, i) => ({
         ppi: x.ppi,
-        color: x.color,
+        color: x.color.secondary,
         scaledRelativeObjectSize: unScaledRelativeObjectSize.height / x.ppi * physicalScale
       }))
         .sort((a, b) => b.scaledRelativeObjectSize - a.scaledRelativeObjectSize);
@@ -266,10 +350,13 @@
     renderDisplays(selectorGroups, svg, output);
 
     selectorGroups
-      .map(g => Array.from(g.querySelectorAll('input[type="range"], select')))
-      .reduce((a, c) => [...c, ...a], [])
-      .forEach(displaySelect => {
-        displaySelect.addEventListener('input', () => renderDisplays(selectorGroups, svg, output));
+      .forEach(g => {
+        g.querySelector('input[type="number"]')
+          .addEventListener('input', e => {
+            renderDisplays(selectorGroups, svg, output);
+          });
+        g.querySelector('select')
+          .addEventListener('input', () => renderDisplays(selectorGroups, svg, output));
       });
 
   </script>
