@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <title>Screenio</title>
-  <meta name="description" content="Compare how different screen sizes and PPI compares to eachother">
+  <meta name="description" content="Here to help you get a feel for the relative size and resolution of displays.">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <meta name="theme-color" content="#fafafa">
@@ -13,8 +13,23 @@
     body {
       min-height: 100vh;
       margin: 0;
-      font-family: sans-serif;
+      font-family: Helvetica Neue, Helvetica, Arial, sans-serif;
       /* background-color: #F3F6F9; */
+    }
+
+    h1 {
+      text-align: center;
+      margin: 3rem 1rem 1rem;
+      font-size: 3.5rem;
+      font-weight: 500;
+    }
+
+    .description {
+      margin: 1rem 1rem 4rem 1rem;
+      text-align: center;
+      font-size: 1.25rem;
+      color: #383838;
+      font-weight: 300;
     }
 
     .display-selectors {
@@ -75,7 +90,8 @@
 </head>
 
 <body>
-  <h1 style="text-align: center;">Screenio</h1>
+  <h1>Screenio</h1>
+  <div class="description">Here to help you get a feel for the relative size and resolution of displays.</div>
   <div class="display-selectors">
     <div class="display-selector-js display-selector" style="color: #FF6E40" data-secondary-color="#DD2C00">
       <div class="title">Display 1</div>
